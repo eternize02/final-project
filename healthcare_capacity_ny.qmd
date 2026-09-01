@@ -32,7 +32,8 @@ The cleaned dataset has `r nrow(ny_mmsas)` MMSAs across New York state with comp
 ## **Summary**
 
 ```{r}
-risk_table <- tbl_summary(ny_mmsas,
+#| echo: false
+tbl_summary(ny_mmsas,
   by = MMSA,
   include = c(hospitals,high_risk_per_hospital, total_at_risk),
   missing = "no",
@@ -49,17 +50,51 @@ remove_footnote_header() |>
 modify_header(label = "**Variable**") |>
 modify_caption("Healthcare Capacity across metropolitain cities in New York") 
 ```
+## **Analysis**
+
+A regression was performed to identify the association between the number of high-risk individuals and the number of hospitals across MMSAs in New York State?
 
 ```{r}
-mean_highrisk ,_ mean(ny_mmsas$hospitals)
+linear <- lm(hospitals ~  total_at_risk, data = ny_mmsas)
+tbl_regression(linear,intercept = TRUE,
+               label = list(total_at_risk ~ "Total high risk individuals"))
 ```
+
+@fig-plot displays a scatter plot between total number of high risk individuals in relation to the number of hospitals found across metropolitan areas in New York state.
 
 ```{r}
-inline_text(risk_table, variable = "total_at_risk",
-# 						column = "stat_0")
+#| label: fig-plot
+#| fig-cap: "Displays a scatterplot between total number of high risk individuals in relation to the number of hospitals found across metropolitain areas in New York state."
+library(ggplot2)
+library(tidyverse)
+ggplot(mmsa_icu_beds, aes(x = total_at_risk, y = hospitals)) +
+  geom_point(color = "blue") +
+  labs(
+    title = "Hospitals vs. Total High-Risk Individuals",
+    x = "Total high-risk individuals",
+    y = "Number of hospitals")
 ```
 
-```{}
-```
+The ratio of hospitals to the number of high risk individuals in the selceted metropolitan areas in New York State
 
-The average number of high-risk individuals across selected New York state metropolitan cities is `r mean_highrisk`.
+```{r}
+#making new variable to then apply my function to find ratio per 100,000 people#
+ny_mmsas$hospitals_per_risk_individual <- (ny_mmsas$hospitals/ ny_mmsas$total_at_risk)
+
+hospital_ratio <- function (x)
+{n <- (x*100000)
+result <- (n)
+return(result)
+}
+
+x<-ny_mmsas$hospitals_per_risk_individual
+ny_mmsas$ratio <- hospital_ratio(x)
+
+#view and compare to verify function is correct
+ny_mmsas$hospitals_per_100k_at_risk <- 
+  (ny_mmsas$hospitals / ny_mmsas$total_at_risk) / 100000
+view (ny_mmsas[, c("hospitals_per_100k_at_risk", "ratio")])
+
+#bar chart to see ratio
+barplot(ny_mmsas$)
+```
