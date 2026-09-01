@@ -1,65 +1,114 @@
-install.packages("tidyverse")
-install.packages("gtsummary")
-install.packages("dplyr")
+
+{r}
+dat <- read_csv(here::here("data/raw/data.csv"))
+
+{r}
+#| warning: false
+#| message: false
+library(here)
 library(tidyverse)
 library(gtsummary)
 library(dplyr)
+library(here)
 
-
-options(repos = c(CRAN = "https://cran.rstudio.com"))
-install.packages(c("gtsummary", "here"))
-
-#convert character to numerical#
-unique(mmsa_icu_beds$total_percent_at_risk)
-view(mmsa_icu_beds)
-mmsa_icu_beds <- icu_beds %>%
-  mutate(total_percent_at_risk = readr::parse_number(total_percent_at_risk))
-str(icu_beds$total_percent_at_risk)
-drop_na(high_risk_per_hospital, total_at_risk)
-
+mmsa_icu_beds <- read_csv(here::here( "mmsa-icu-beds.csv"))
 ny_mmsas <- mmsa_icu_beds %>%
   filter(str_detect(MMSA, "NY"))
 
-
-#tablesummary#
-tbl_summary(mmsa_icu_beds,
+{r}
+#| echo: false
+#| label: tbl-one
+#| tbl-cap: "Healthcare Capacity across metropolitain cities in New York"
+tbl_summary(ny_mmsas,
             by = MMSA,
-            include = c(icu_beds, high_risk_per_ICU_bed, hospitals,
-                        high_risk_per_hospital, total_at_risk, total_percent_at_risk),
+            include = c(hospitals,high_risk_per_hospital, total_at_risk),
             missing = "no",
+            type = list(hospitals ~ "continuous",
+                        high_risk_per_hospital ~ "continuous",
+                        total_at_risk ~ "continuous"),
             statistic = all_continuous() ~ "{mean}",
-            label = list(total_percent_at_risk ~ "Individuals at high risk (%)",
-                         high_risk_per_ICU_bed ~ "High risk individuals per ICU bed",
-                         high_risk_per_hospital ~ "High risk individuals per hospital",
-                         icu_beds ~ "ICU beds in area",
+            label = list(high_risk_per_hospital ~ "High risk individuals per hospital",
                          hospitals ~ "Hospitals in area",
                          total_at_risk ~ "Total number of high risk individuals")) |>
-  add_overall(
-    col_label = "**Total**"
-  ) |>
+  add_overall(col_label = "**Mean**") |>
   bold_labels() |>
   remove_footnote_header() |>
-  modify_header(
-    label = "**Variable**"
-  ) |>
-  modify_caption("MMSA characteristics and healthcare capacity"
-  )
+  modify_header(label = "**Variable**") |>
+  modify_caption("Healthcare Capacity across metropolitain cities in New York") 
 
-#regression; What is the association between the number of high-risk individuals and the number of hospitals across MMSAs?
-linear <- lm(hospitals ~  total_at_risk, data = mmsa_icu_beds)
+table1 <- tbl_summary(ny_mmsas,
+                      by = MMSA,
+                      include = c(hospitals,high_risk_per_hospital, total_at_risk),
+                      missing = "no",
+                      type = list(hospitals ~ "continuous",
+                                  high_risk_per_hospital ~ "continuous",
+                                  total_at_risk ~ "continuous"),
+                      statistic = all_continuous() ~ "{mean}",
+                      label = list(high_risk_per_hospital ~ "High risk individuals per hospital",
+                                   hospitals ~ "Hospitals in area",
+                                   total_at_risk ~ "Total number of high risk individuals")) |>
+  add_overall(col_label = "**Mean**") |>
+  bold_labels() |>
+  remove_footnote_header() |>
+  modify_header(label = "**Variable**") |>
+  modify_caption("Healthcare Capacity across metropolitain cities in New York") 
+
+{r}
+#| include: false
+table1$table_body
+
+
+{r}
+#| label: tbl-two
+#| tbl-cap: "Regression Analysis"
+linear <- lm(hospitals ~  total_at_risk, data = ny_mmsas)
 tbl_regression(linear,intercept = TRUE,
                label = list(total_at_risk ~ "Total high risk individuals"))
 
-#load scatterplot package
-library(ggplot2)
-library(tidyverse)
-ggplot(mmsa_icu_beds, aes(x = total_at_risk, y = hospitals)) +
-  geom_point() +
-  labs(
-    title = "Hospitals vs. Total High-Risk Individuals",
-    x = "Total high-risk individuals",
-    y = "Number of hospitals")
+{r}
+#| label: fig-plot 
+#| fig-cap: "Scatterplot represents total number of high risk individuals in relation to the number of hospitals found across metropolitain areas in New York state."
+library(ggplot2) 
+library(tidyverse) 
+ggplot(mmsa_icu_beds, aes(x = total_at_risk, y = hospitals)) +   
+  geom_point(na.rm = TRUE, color = "royalblue3") +   
+  labs(     title = "Hospitals vs. Total High-Risk Individuals",     
+            x = "Total high-risk individuals",     
+            y = "Number of hospitals")
 
-#making a new variable#
-mmsa_icu_beds$hospitals_per_10k_at_risk <- 
-  (mmsa_icu_beds$hospitals / mmsa_icu_beds$total_at_risk) / 10000
+{r}
+#| include: false
+#making new variable to then apply my function to find ratio per 100,000 people#
+ny_mmsas$hospitals_per_risk_individual <- (ny_mmsas$hospitals/ ny_mmsas$total_at_risk)
+
+hospital_ratio <- function (x)
+{n <- (x*100000)
+result <- (n)
+return(result)
+}
+x<-ny_mmsas$hospitals_per_risk_individual
+hospital_ratio(x)
+ny_mmsas$ratio <- hospital_ratio(x)
+
+#view and compare to verify function is correct
+ny_mmsas$hospitals_per_100k_at_risk <- 
+  (ny_mmsas$hospitals / ny_mmsas$total_at_risk) * 100000
+view (ny_mmsas[, c("hospitals_per_100k_at_risk", "ratio")])
+
+{r}
+#| label: fig-plot2
+#| fig-cap: "Bar chart represents hospital ratio for every 100k high risk individual."
+
+ggplot(ny_mmsas, aes(x =MMSA, y = ratio)) +
+  geom_bar(stat = "identity", fill = "royalblue1") +
+  labs(title = "Hospital Ratio for every 100k high risk individuals", x = "Metropolitain Area", y = "Ratio") +
+  theme_minimal()
+
+{r}
+##making statustic table
+#| include: false
+ny_ratio_table <- (ny_mmsas[, c("MMSA", "ratio")])
+view(ny_ratio_table)
+statistic <-list(
+  mean=round(mean(ny_ratio_table$ratio), digits = 2),
+  max=round(max(ny_ratio_table$ratio), digits = 2))
