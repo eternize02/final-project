@@ -49,10 +49,37 @@ bold_labels() |>
 remove_footnote_header() |>
 modify_header(label = "**Variable**") |>
 modify_caption("Healthcare Capacity across metropolitain cities in New York") 
+
+table1 <- tbl_summary(ny_mmsas,
+  by = MMSA,
+  include = c(hospitals,high_risk_per_hospital, total_at_risk),
+  missing = "no",
+  type = list(hospitals ~ "continuous",
+              high_risk_per_hospital ~ "continuous",
+              total_at_risk ~ "continuous"),
+statistic = all_continuous() ~ "{mean}",
+  label = list(high_risk_per_hospital ~ "High risk individuals per hospital",
+               hospitals ~ "Hospitals in area",
+               total_at_risk ~ "Total number of high risk individuals")) |>
+add_overall(col_label = "**Mean**") |>
+bold_labels() |>
+remove_footnote_header() |>
+modify_header(label = "**Variable**") |>
+modify_caption("Healthcare Capacity across metropolitain cities in New York") 
 ```
+
+```{r}
+#| include: false
+table1$table_body
+```
+
+The mean of hospitals in the selected metropolitan area is (`r inline_text(table1, variable = "hospitals", column = "stat_0")`). There are roughly (`r inline_text(table1, variable = "total_at_risk", column = "stat_0")`) high risk individuals residing in these areas.
+
 ## **Analysis**
 
-A regression was performed to identify the association between the number of high-risk individuals and the number of hospitals across MMSAs in New York State?
+#### *Regression*
+
+A regression was performed to identify the association between the number of high-risk individuals and the number of hospitals across MMSAs in New York State. @fig-plot displays a scatter plot between total number of high risk individuals in relation to the number of hospitals found across metropolitan areas in New York state.
 
 ```{r}
 linear <- lm(hospitals ~  total_at_risk, data = ny_mmsas)
@@ -60,22 +87,21 @@ tbl_regression(linear,intercept = TRUE,
                label = list(total_at_risk ~ "Total high risk individuals"))
 ```
 
-@fig-plot displays a scatter plot between total number of high risk individuals in relation to the number of hospitals found across metropolitan areas in New York state.
-
 ```{r}
-#| label: fig-plot
-#| fig-cap: "Displays a scatterplot between total number of high risk individuals in relation to the number of hospitals found across metropolitain areas in New York state."
-library(ggplot2)
-library(tidyverse)
-ggplot(mmsa_icu_beds, aes(x = total_at_risk, y = hospitals)) +
-  geom_point(color = "blue") +
-  labs(
-    title = "Hospitals vs. Total High-Risk Individuals",
-    x = "Total high-risk individuals",
-    y = "Number of hospitals")
+#| label: fig-plot 
+#| fig-cap: "Scatterplot represents total number of high risk individuals in relation to the number of hospitals found across metropolitain areas in New York state."
+library(ggplot2) 
+library(tidyverse) 
+ggplot(mmsa_icu_beds, aes(x = total_at_risk, y = hospitals)) +   
+  geom_point(color = "blue") +   
+  labs(     title = "Hospitals vs. Total High-Risk Individuals",     
+            x = "Total high-risk individuals",     
+            y = "Number of hospitals")
 ```
 
-The ratio of hospitals to the number of high risk individuals in the selceted metropolitan areas in New York State
+#### *Ratio*
+
+There are approximately `r stats$mean` for every 100,000 high risk individuals residing in the selected metropolitan areas in New York. The metropolitan area that has the most hospitals for every 100,000 high risk individuals in New York is Albany-Schenectady-Troy, NY, with a ratio of
 
 ```{r}
 #making new variable to then apply my function to find ratio per 100,000 people#
@@ -92,9 +118,37 @@ ny_mmsas$ratio <- hospital_ratio(x)
 
 #view and compare to verify function is correct
 ny_mmsas$hospitals_per_100k_at_risk <- 
-  (ny_mmsas$hospitals / ny_mmsas$total_at_risk) / 100000
+  (ny_mmsas$hospitals / ny_mmsas$total_at_risk) * 100000
 view (ny_mmsas[, c("hospitals_per_100k_at_risk", "ratio")])
 
 #bar chart to see ratio
-barplot(ny_mmsas$)
+#| label: fig-plot
+#| fig-cap: "Barc chart represents hospital Ratio for every 100k high risk individual."
+ggplot(ny_mmsas, aes(x = ny_mmsas$MMSA, y = ny_mmsas$ratio)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(title = "Hospital Ratio for every 100k high risk individuals", x = "Metropolitain Area", y = "Ratio") +
+  theme_minimal()
+
+ny_ratio_table <- (ny_mmsas[, c("MMSA", "ratio")])
+#| include: false
+tbl_summary(ny_ratio_table,
+            by = MMSA,
+            include = ratio,
+label = list(ratio ~ "Ratio")) |>
+  modify_caption("Hospital Ratio for every 100k high risk individuals")
+  
 ```
+```{r}
+#| include: false
+ny_ratio_table <- (ny_mmsas[, c("MMSA", "ratio")])
+view(ny_ratio_table)
+```
+```{r}
+stats<- list(mean= mean(ny_ratio_table$ratio))
+ny_ratio_table$mean <- stats 
+
+max_ratio <- ny_ratio_table %>%
+  filter(ratio == max(ratio)) %>%
+```
+
+There are approximately `r stats$mean` for every 100,000 high risk individuals residing in the selected metropolitan areas in New York. The metropolitan area that has the most hospitals for every 100,000 high risk individuals in New York is Albany-Schenectady-Troy, NY, with a ratio of `r inline_text(ny_ratio_table, column = "ratio".max()`)
