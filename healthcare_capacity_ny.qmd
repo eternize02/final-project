@@ -8,7 +8,7 @@ execute:
   echo: false
 ---
 
-## Data
+##Data
 
 The dataset combines data from the Centers for Disease Control and Prevention’s [Behavioral Risk Factor Surveillance System (BRFSS)](https://www.cdc.gov/brfss/smart/smart_2017.html), a collection of health-related surveys conducted each year of more than 400,000 Americans, and the [Kaiser Family Foundation](https://khn.org/news/as-coronavirus-spreads-widely-millions-of-older-americans-live-in-counties-with-no-icu-beds/#lookup) to show the number of people who are at high risk of becoming seriously ill from COVID-19 per ICU bed in each metropolitan area, micropolitan area or metropolitan division for which we have data.
 
