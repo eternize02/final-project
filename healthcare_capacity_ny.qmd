@@ -15,10 +15,6 @@ The dataset combines data from the Centers for Disease Control and Prevention’
 *\*Data was found on github by jayb, covid-geography*
 
 ```{r}
-dat <- read_csv(here::here("data/raw/data.csv"))
-```
-
-```{r}
 #| warning: false
 #| message: false
 library(here)
@@ -153,3 +149,8 @@ statistic <-list(
 ```
 
 @fig-plot2 exhibits the ratio of hospitals to high risk individuals in the metropolitan areas in New York. There are approximately `r statistic$mean` for every 100,000 high risk individuals residing in the selected metropolitan areas in New York. The metropolitan area that has the highest amount of hospitals for every 100,000 high risk individuals in New York is Albany-Schenectady-Troy, NY, with a ratio of `r statistic$max`.
+
+```{r}
+#use here to save cleaned dataset
+write_csv(ny_mmsas, here("clean data", "healthcare_capacity_ny.csv"))
+```

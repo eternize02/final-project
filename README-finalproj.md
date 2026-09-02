@@ -25,3 +25,6 @@ use e-cigarettes or vaping products every day or some days; or if they’re curr
 of these conditions but counted them only once each, so anyone with multiple conditions doesn’t get counted multiple times. We were not able to 
 include a number of conditions for which we did not have location-based data from the BRFSS, such as liver disease, having smoked, vaped or dabbed 
 marijuana in the last 30 days, and getting cancer treatment or being on immunosuppression medications.
+
+AI Usage: Conv ersation has been uploaded to github repository
+
