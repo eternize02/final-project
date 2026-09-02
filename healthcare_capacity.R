@@ -2,7 +2,7 @@ library(here)
 library(tidyverse)
 library(gtsummary)
 library(dplyr)
-library(here) 
+library(here)
 
 mmsa_icu_beds <- read_csv(here::here( "mmsa-icu-beds.csv"))
 ny_mmsas <- mmsa_icu_beds %>%
