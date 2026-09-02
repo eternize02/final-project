@@ -26,4 +26,5 @@ of these conditions but counted them only once each, so anyone with multiple con
 include a number of conditions for which we did not have location-based data from the BRFSS, such as liver disease, having smoked, vaped or dabbed 
 marijuana in the last 30 days, and getting cancer treatment or being on immunosuppression medications."
 
-AI Usage: Conversation has been uploaded to github repository
+AI Usage: 
+I used Claude.AI to assist me in understanding how to use the digits function in R. My original code was not reading the digits input and kept the "raw" number in my inline text. I also copied an error I received to better understand what was the problem. I checked both problems by reviewing the output to verify if the intended output was given. Conversation has been uploaded to github repository.
