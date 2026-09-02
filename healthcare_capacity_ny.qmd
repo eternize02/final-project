@@ -136,7 +136,7 @@ ggplot(ny_mmsas, aes(x =MMSA, y = ratio)) +
   geom_bar(stat = "identity", fill = "royalblue1") +
   labs(title = "Hospital Ratio for every 100k high risk individuals", x = "Metropolitain Area", y = "Ratio") +
   theme_minimal()
-```
+``` 
 
 ```{r}
 ##making statustic table
